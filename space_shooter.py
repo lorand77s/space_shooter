@@ -30,8 +30,8 @@ pygame.mixer.init()
 sound_shoot = pygame.mixer.Sound("assets/pew.wav")
 sound_expl = pygame.mixer.Sound("assets/expl.wav")
 
-pygame.joystick.init()
-joystick = pygame.joystick.Joystick(0)
+# Keyboard state tracking
+keys_pressed = {}
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self):
@@ -57,8 +57,17 @@ class Player(pygame.sprite.Sprite):
 				self.health = 100
 
 	def move(self):
-		self.vx = joystick.get_axis(0) * 8
-		self.vy = joystick.get_axis(1) * 5
+		self.vx = 0
+		self.vy = 0
+		keys = pygame.key.get_pressed()
+		if keys[pygame.K_LEFT]:
+			self.vx = -8
+		if keys[pygame.K_RIGHT]:
+			self.vx = 8
+		if keys[pygame.K_UP]:
+			self.vy = -5
+		if keys[pygame.K_DOWN]:
+			self.vy = 5
 		self.rect.x += self.vx
 		self.rect.y += self.vy
 		if self.rect.right > WIDTH:
@@ -230,35 +239,38 @@ while running:
 		draw_text(screen, "Space Shooter", 50, WIDTH / 2, HEIGHT * 0.2, "center")
 		draw_text(screen, f"Last score: {score}", 20, WIDTH / 2, HEIGHT * 0.35, "center")
 		draw_text(screen, f"High score: {high_score}", 20, WIDTH / 2, HEIGHT * 0.4, "center")
-		draw_text(screen, "Controls (Xbox):", 20, WIDTH / 2, HEIGHT * 0.53, "center")
-		draw_text(screen, "B to start game", 20, WIDTH / 2, HEIGHT * 0.6, "center")
-		draw_text(screen, "X to exit game", 20, WIDTH / 2, HEIGHT * 0.65, "center")
-		draw_text(screen, "A to shoot", 20, WIDTH / 2, HEIGHT * 0.72, "center")
-		draw_text(screen, "LS to move the ship", 20, WIDTH / 2, HEIGHT * 0.77, "center")
+		draw_text(screen, "Controls (Keyboard):", 20, WIDTH / 2, HEIGHT * 0.53, "center")
+		draw_text(screen, "ENTER to start game", 20, WIDTH / 2, HEIGHT * 0.6, "center")
+		draw_text(screen, "ESC to exit game", 20, WIDTH / 2, HEIGHT * 0.65, "center")
+		draw_text(screen, "SPACE to shoot", 20, WIDTH / 2, HEIGHT * 0.72, "center")
+		draw_text(screen, "ARROW KEYS to move the ship", 20, WIDTH / 2, HEIGHT * 0.77, "center")
 		pygame.display.flip()
 		
 		for event in pygame.event.get():
-			if event.type == pygame.QUIT or (event.type == pygame.JOYBUTTONDOWN and event.button == 2):
+			if event.type == pygame.QUIT:
 				running = False
-			if event.type == pygame.JOYBUTTONDOWN and event.button == 1:
-				main_menu = False
-				
-				sprites_all = pygame.sprite.Group()
-				sprites_enemies = pygame.sprite.Group()
-				sprites_player_bullets = pygame.sprite.Group()
-				sprites_enemy_bullets = pygame.sprite.Group()
-				player = Player()
-				sprites_all.add(player)
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					running = False
+				if event.key == pygame.K_RETURN:
+					main_menu = False
+					
+					sprites_all = pygame.sprite.Group()
+					sprites_enemies = pygame.sprite.Group()
+					sprites_player_bullets = pygame.sprite.Group()
+					sprites_enemy_bullets = pygame.sprite.Group()
+					player = Player()
+					sprites_all.add(player)
 
-				enemies_now = 0
-				enemies_level = 2
-				for i in range(enemies_level):
-					create_enemy()
-				
-				score = 0
-				scroll_speed = 1
-				bg_y1 = 0
-				bg_y2 = -HEIGHT
+					enemies_now = 0
+					enemies_level = 2
+					for i in range(enemies_level):
+						create_enemy()
+					
+					score = 0
+					scroll_speed = 1
+					bg_y1 = 0
+					bg_y2 = -HEIGHT
 
 		clock.tick(FPS)
 
@@ -266,7 +278,7 @@ while running:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
-			if event.type == pygame.JOYBUTTONDOWN and event.button == 0:
+			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 				player_bullet = PlayerBullet(player.rect.centerx, player.rect.top)
 				sprites_all.add(player_bullet)
 				sprites_player_bullets.add(player_bullet)
